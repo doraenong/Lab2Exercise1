@@ -23,6 +23,11 @@ public class MainActivity extends ActionBarActivity {
         updateExprDisplay();
     }
 
+    public void updateAnsDisplay(String s) {
+        TextView tvAns = (TextView)findViewById(R.id.tvAns);
+        tvAns.setText(s.toString());
+    }
+
     public void updateExprDisplay() {
         TextView tvExpr = (TextView)findViewById(R.id.tvExpr);
         tvExpr.setText(expr.toString());
@@ -36,6 +41,34 @@ public class MainActivity extends ActionBarActivity {
         //reference: http://stackoverflow.com/questions/2206378/how-to-split-a-string-but-also-keep-the-delimiters
         String e = expr.toString();
         String[] tokens = e.split("((?<=\\+)|(?=\\+))|((?<=\\-)|(?=\\-))|((?<=\\*)|(?=\\*))|((?<=/)|(?=/))");
+
+        String op = "";
+        int num = 0;
+
+        for (int i = 0 ; i < tokens.length ; i++)
+        {
+            if (
+                tokens[i].equals("+") ||
+                tokens[i].equals("-") ||
+                tokens[i].equals("*") ||
+                tokens[i].equals("/")
+                )
+            {
+                op = tokens[i];
+            }
+            else
+            {
+                int c_num = Integer.parseInt(tokens[i]);
+
+                if (op.equals("+")) num += c_num;
+                else if (op.equals("-")) num -= c_num;
+                else if (op.equals("*")) num *= c_num;
+                else if (op.equals("/")) num /= c_num;
+                else if (op.equals("")) num = c_num;
+            }
+        }
+
+        updateAnsDisplay(Integer.toString(num));
     }
 
     public void digitClicked(View v) {
@@ -53,12 +86,59 @@ public class MainActivity extends ActionBarActivity {
         //IF the last character in expr is not an operator and expr is not "",
         //THEN append the clicked operator and updateExprDisplay,
         //ELSE do nothing
+        String e = expr.toString();
+        String[] tokens = e.split("((?<=\\+)|(?=\\+))|((?<=\\-)|(?=\\-))|((?<=\\*)|(?=\\*))|((?<=/)|(?=/))");
+        //to compare string with string ==> cannot use str != ""
+        if (
+                !e.equals("") &&
+                !tokens[tokens.length-1].equals("+") &&
+                !tokens[tokens.length-1].equals("-") &&
+                !tokens[tokens.length-1].equals("*") &&
+                !tokens[tokens.length-1].equals("/")
+            )
+        {
+            String d = ((TextView)v).getText().toString();
+            expr.append(d);
+            updateExprDisplay();
+        }
+
+
     }
+    public void equalClicked(View v)
+    {
+        TextView tvAns = (TextView)findViewById(R.id.tvAns);
+        String d = tvAns.getText().toString();
+        expr = new StringBuffer();
+        expr.append(d);
+        updateExprDisplay();
+        updateAnsDisplay(Integer.toString(0));
+    }
+
+    int mem = 0;
+    public void mClicked(View v) {
+        int mb = v.getId();
+        if (mb == R.id.madd)
+        {
+            mem = 1010;
+            Toast t = Toast.makeText(this.getApplicationContext(),
+                    "Memory is " + mem , Toast.LENGTH_SHORT);
+            t.show();
+        }
+        else if (mb == R.id.mc)
+        {
+            mem = 0;
+            Toast t = Toast.makeText(this.getApplicationContext(),
+                    "Memory is " + mem , Toast.LENGTH_SHORT);
+            t.show();
+        }
+    }
+
 
     public void ACClicked(View v) {
         //Clear expr and updateExprDisplay
         expr = new StringBuffer();
         updateExprDisplay();
+        updateAnsDisplay(Integer.toString(0));
         //Display a toast that the value is cleared
         Toast t = Toast.makeText(this.getApplicationContext(),
                 "All cleared", Toast.LENGTH_SHORT);
@@ -70,6 +150,7 @@ public class MainActivity extends ActionBarActivity {
         if (expr.length() > 0) {
             expr.deleteCharAt(expr.length()-1);
             updateExprDisplay();
+            recalculate();
         }
     }
 
